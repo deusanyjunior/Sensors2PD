@@ -7,6 +7,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import org.puredata.android.io.AudioParameters;
 import org.puredata.android.io.PdAudio;
@@ -27,6 +29,7 @@ import android.app.Dialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,10 +39,11 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class Sensors2PD extends Activity implements SensorEventListener, OnTouchListener {
+public class Sensors2PDActivity extends Activity implements SensorEventListener, OnTouchListener {
 
 	private static final String TAG = "SensorToPD";
 	private boolean debug = false;
@@ -48,7 +52,8 @@ public class Sensors2PD extends Activity implements SensorEventListener, OnTouch
 	private SensorManager mSensorManager;
 	public View multiTouchView;
 	
-	MenuItem browseButton;
+	private int maxSensorId = 1;
+	
 	File pdFile = null;
 	ArrayList<String> str = new ArrayList<String>();
 	private Boolean firstLvl = true;
@@ -67,12 +72,19 @@ public class Sensors2PD extends Activity implements SensorEventListener, OnTouch
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sensor2_pd);
-
+		
+		// View
 		View view = findViewById(R.id.scrollView1);
 		view.setOnTouchListener(this);
 		
+		// Sensors and Touch
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		
+		List<Sensor> listSensor = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+		for(Sensor sensor : listSensor){
+			// "maxSensorId" is used on touch methods to set touch textView initial id
+			if(sensor.getType()>maxSensorId) maxSensorId = sensor.getType()+1;
+		}
+				
 		// PD
 		try {
         	initPd();
@@ -97,17 +109,24 @@ public class Sensors2PD extends Activity implements SensorEventListener, OnTouch
         switch (item.getItemId())
         {
 	        case R.id.action_browse:
-	        	if( isSDCardUnlocked(Sensors2PD.this) ) {
+	        	if( isSDCardUnlocked(Sensors2PDActivity.this) ) {
 	        		loadFileList();
 	        		onCreateDialog(BROWSE_DIALOG).show();	        		
 	        	}
 	        	return true;
 	        case R.id.action_debug:
 	        	if(debug) {
+	        		TextView textIntro = (TextView) findViewById(R.id.textViewIntro);
+	        		textIntro.setVisibility(TextView.VISIBLE);
 	        		debug = false;
 	        	} else {
+	        		TextView textIntro = (TextView) findViewById(R.id.textViewIntro);
+	        		textIntro.setVisibility(TextView.GONE);
 	        		debug = true;
 	        	}
+	        case R.id.action_guide:
+	        	Intent intent = new Intent(this, GuideActivity.class);
+	        	startActivity(intent);
 	        default:
 	            return super.onOptionsItemSelected(item);
         }
@@ -262,12 +281,6 @@ public class Sensors2PD extends Activity implements SensorEventListener, OnTouch
 	 
     // Android Sensors
     
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	/* Sensor ID	 
 	 * Number   Type of Sensor              Description
 	 * 	 1	int	TYPE_ACCELEROMETER			A constant describing an accelerometer sensor type.
@@ -302,6 +315,12 @@ public class Sensors2PD extends Activity implements SensorEventListener, OnTouch
 			}
 			setTextView(event.sensor.getType(), textView.toString());			
 		}
+	}
+	
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

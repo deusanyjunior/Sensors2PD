@@ -22,6 +22,14 @@
             android:orientation="vertical" >
 
             <TextView
+                android:id="@+id/textViewIntro"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/text_intro"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:visibility="visible" />
+            
+            <TextView
                 android:id="@+id/textView1"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"

@@ -21,7 +21,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="br.usp.ime.compmus.dj.sensors2pd.Sensors2PD"
+            android:name="br.usp.ime.compmus.dj.sensors2pd.Sensors2PDActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,6 +29,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity 
+            android:name="br.usp.ime.compmus.dj.sensors2pd.GuideActivity"
+            android:label="@string/activity_guide"
+            android:parentActivityName="br.usp.ime.compmus.dj.sensors2pd.Sensors2PDActivity">
+            <meta-data 
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="br.usp.ime.compmus.dj.sensors2pd.Sensors2PDActivity"/>
+        </activity>
+        
     </application>
 
 </manifest>
