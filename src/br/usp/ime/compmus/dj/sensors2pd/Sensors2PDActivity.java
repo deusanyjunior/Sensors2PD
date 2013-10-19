@@ -144,6 +144,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
     	super.onResume();
     	PdAudio.startAudio(this);
     	
+    	// TODO: Sensor delay can be an option changed from the menu
     	for(Sensor sensor: mSensorManager.getSensorList(Sensor.TYPE_ALL)) {
     		mSensorManager.registerListener(this,sensor, SensorManager.SENSOR_DELAY_FASTEST);
     	}
