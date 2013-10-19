@@ -82,7 +82,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 		List<Sensor> listSensor = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		for(Sensor sensor : listSensor){
 			// "maxSensorId" is used on touch methods to set touch textView initial id
-			if(sensor.getType()>maxSensorId) maxSensorId = sensor.getType()+1;
+			if(sensor.getType()>=maxSensorId) maxSensorId = sensor.getType()+1;
 		}
 				
 		// PD
@@ -119,14 +119,19 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	        		TextView textIntro = (TextView) findViewById(R.id.textViewIntro);
 	        		textIntro.setVisibility(TextView.VISIBLE);
 	        		debug = false;
+	        		for(int i = 0; i <= 30 || i<=maxSensorId+10; i++) {
+	        			setTextView(i, "", TextView.GONE);
+	        		}
 	        	} else {
 	        		TextView textIntro = (TextView) findViewById(R.id.textViewIntro);
 	        		textIntro.setVisibility(TextView.GONE);
 	        		debug = true;
 	        	}
+	        	return true;
 	        case R.id.action_guide:
 	        	Intent intent = new Intent(this, GuideActivity.class);
 	        	startActivity(intent);
+	        	return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
         }
@@ -224,6 +229,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	}
     
 	@Override
+	// TODO: Change the touches IDs correctly
 	public boolean onTouch(View v, MotionEvent event) {
 		final int action = event.getAction() & MotionEvent.ACTION_MASK;
 		switch(action) {
@@ -237,7 +243,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 
 				if(debug) {
 					StringBuilder textView = new StringBuilder("sensorT"+id+":\n vx: "+event.getX()+"\n vy: "+event.getY());
-					setTextView(20+id, textView.toString());
+					setTextView(maxSensorId+id, textView.toString(), TextView.VISIBLE);
 				}
 //				Log.w(TAG, "Pointer Down: "+id);						
 			}
@@ -251,7 +257,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 				PdBase.sendFloat("sensorT"+id+"vy", event.getY());
 				if(debug) {
 					StringBuilder textView = new StringBuilder("sensorT"+id+":\n vx: "+event.getX()+"\n vy: "+event.getY());
-					setTextView(20+id, textView.toString());						
+					setTextView(maxSensorId+id, textView.toString(), TextView.VISIBLE);						
 //					Log.w(TAG, "Pointer Move: "+event.getPointerId(i));					
 				}
 			}
@@ -264,13 +270,23 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 			PdBase.sendFloat("sensorT"+id+"vy", -1);
 			if(debug) {
 				StringBuilder textView = new StringBuilder("sensorT"+id+":\n vx: -1\n vy: -1");
-				setTextView(20+id, textView.toString());
+				// TODO: set the visibility to GONE someday..
+				setTextView(maxSensorId+id, textView.toString(), TextView.VISIBLE);
 //				Log.w(TAG, "Pointer UP: "+id+" "+event.getActionIndex()+" "+event.getPointerId(event.getActionIndex()));
 				for(int i = 0; i < event.getPointerCount(); i++) {
 //					Log.e(TAG, "Pointer UP: "+event.getPointerId(i));
 				}					
 			}
 
+			break;
+		case MotionEvent.ACTION_CANCEL:
+			Log.e(TAG, "MotionEvent.ACTION_CANCEL");
+			break;
+		case MotionEvent.ACTION_SCROLL:
+			Log.e(TAG, "MotionEvent.ACTION_SCROLL");
+			break;
+		case MotionEvent.ACTION_POINTER_INDEX_MASK:
+			Log.e(TAG, "MotionEvent.ACTION_POINTER_INDEX_MASK");
 			break;
 		}
 		return false;
@@ -313,7 +329,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 			for(int i = 0; i < event.values.length; i++) {
 				textView.append("\n v"+i+": "+event.values[i]);				
 			}
-			setTextView(event.sensor.getType(), textView.toString());			
+			setTextView(event.sensor.getType(), textView.toString(), TextView.VISIBLE);			
 		}
 	}
 	
@@ -329,158 +345,158 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	
 	// View
 	
-	private void setTextView(int id, String text) {
+	private void setTextView(int id, String text, int visibility) {
 		TextView tv;
 		switch (id) {
 		case 1:
 			tv = (TextView) findViewById(R.id.textView1);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 2:
 			tv = (TextView) findViewById(R.id.textView2);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 3:
 			tv = (TextView) findViewById(R.id.textView3);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 4:
 			tv = (TextView) findViewById(R.id.textView4);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 5:
 			tv = (TextView) findViewById(R.id.textView5);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 6:
 			tv = (TextView) findViewById(R.id.textView6);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 7:
 			tv = (TextView) findViewById(R.id.textView7);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 8:
 			tv = (TextView) findViewById(R.id.textView8);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 9:
 			tv = (TextView) findViewById(R.id.textView9);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 10:
 			tv = (TextView) findViewById(R.id.textView10);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 11:
 			tv = (TextView) findViewById(R.id.textView11);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 12:
 			tv = (TextView) findViewById(R.id.textView12);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 13:
 			tv = (TextView) findViewById(R.id.textView13);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 14:
 			tv = (TextView) findViewById(R.id.textView14);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 15:
 			tv = (TextView) findViewById(R.id.textView15);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 16:
 			tv = (TextView) findViewById(R.id.textView16);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 17:
 			tv = (TextView) findViewById(R.id.textView17);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 18:
 			tv = (TextView) findViewById(R.id.textView18);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 19:
 			tv = (TextView) findViewById(R.id.textView19);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 20:
 			tv = (TextView) findViewById(R.id.textView20);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 21:
 			tv = (TextView) findViewById(R.id.textView21);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 22:
 			tv = (TextView) findViewById(R.id.textView22);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 23:
 			tv = (TextView) findViewById(R.id.textView23);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 24:
 			tv = (TextView) findViewById(R.id.textView24);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 25:
 			tv = (TextView) findViewById(R.id.textView25);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 26:
 			tv = (TextView) findViewById(R.id.textView26);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 27:
 			tv = (TextView) findViewById(R.id.textView27);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 28:
 			tv = (TextView) findViewById(R.id.textView28);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 29:
 			tv = (TextView) findViewById(R.id.textView29);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		case 30:
 			tv = (TextView) findViewById(R.id.textView30);
 			tv.setText(text);
-			tv.setVisibility(TextView.VISIBLE);
+			tv.setVisibility(visibility);
 			break;
 		default:
 			break;
