@@ -108,7 +108,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 		            }
 		        }); 
 		    } 
-		 }, 1000, 2000);
+		 }, 1000, 250);
 		
 				
 		
@@ -398,9 +398,9 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
     		}
     		wifiList = mainWifi.getScanResults();
     		for(int i = 0; i < wifiList.size(); i++){
-    			PdBase.sendFloat("sensorW["+wifiList.get(i).SSID+"]"+i, wifiList.get(i).level);
+    			PdBase.sendFloat("sensorW-"+wifiList.get(i).SSID, wifiList.get(i).level);
     			if ( debug ) {
-    				setTextViewSensorsWifi(i, "sensorW["+wifiList.get(i).SSID+"] \n level: "+wifiList.get(i).level, TextView.VISIBLE);
+    				setTextViewSensorsWifi(i, "sensorW-"+wifiList.get(i).SSID+"\n level: "+wifiList.get(i).level, TextView.VISIBLE);
     			}
     		}        		
         }
