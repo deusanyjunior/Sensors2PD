@@ -12,8 +12,11 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.puredata.android.io.AudioParameters;
 import org.puredata.android.io.PdAudio;
+import org.puredata.android.service.PdService;
 import org.puredata.android.utils.PdUiDispatcher;
 import org.puredata.core.PdBase;
 import org.puredata.core.utils.IoUtils;
@@ -24,18 +27,23 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.AlertDialog.Builder;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.util.Log;
 import android.view.Menu;
@@ -54,8 +62,11 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 
 	private static final String TAG = "SensorToPD";
 	private boolean debug = false;
+	private static boolean isRunning = false;
+	private static boolean wifiListReceived = true;
 	
 	private PdUiDispatcher dispatcher;
+//	private PdService pdService = null;
 	private SensorManager mSensorManager;
 	public View multiTouchView;
 	
@@ -73,9 +84,11 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	private int touchIds[] = new int[20];
 	
 	Timer timerWifiScan;
-	WifiManager mainWifi;
+	static WifiManager mainWifi;
 	WifiReceiver receiverWifi;
 	List<ScanResult> wifiList;
+	
+	WifiReceiverThread wifiThread;
 	
 	
 	@Override
@@ -96,23 +109,28 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 		receiverWifi = new WifiReceiver();
 		registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 				
-		final Handler handler = new Handler(); 
-		timerWifiScan = new Timer();
-		timerWifiScan.schedule(new TimerTask() { 
-			public void run() { 
-				handler.post(new Runnable() {
-					@Override
-					public void run() { 
-//						Log.i(TAG, "Run Scan!");
-						mainWifi.startScan();
-		            }
-		        }); 
-		    } 
-		 }, 1000, 250);
+//		final Handler handler = new Handler(); 
+//		timerWifiScan = new Timer();
+//		timerWifiScan.schedule(new TimerTask() { 
+//			public void run() { 
+//				handler.post(new Runnable() {
+//					@Override
+//					public void run() { 
+////						Log.i(TAG, "Run Scan!");
+//						mainWifi.startScan();
+//		            }
+//		        }); 
+//		    } 
+//		 }, 1000, 500);
 		
-				
+	
+		isRunning = true;
+		wifiThread = new WifiReceiverThread();
+		wifiThread.start();
 		
 		// PD
+//		bindService(new Intent(this, PdService.class), pdConnection, BIND_AUTO_CREATE);
+		
 		try {
         	initPd();
         	loadPatch();
@@ -120,9 +138,8 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
         	Log.e(TAG, e.toString());
         	finish();
         }
-		
 	}
-
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -190,14 +207,14 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
     	super.onPause();
     	PdAudio.stopAudio();
     	unregisterReceiver(receiverWifi);
-    	timerWifiScan.cancel();
+//    	timerWifiScan.cancel();
     }
     
     @Override
     protected void onStop() {
         mSensorManager.unregisterListener(this);
-        timerWifiScan.cancel();
-        timerWifiScan.purge();
+//        timerWifiScan.cancel();
+//        timerWifiScan.purge();
         super.onStop();
     }
     
@@ -206,13 +223,60 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
     	super.onDestroy();
     	PdAudio.release();
     	PdBase.release();
-    	timerWifiScan.cancel();
-        timerWifiScan.purge();
+//    	timerWifiScan.cancel();
+//        timerWifiScan.purge();
+        isRunning = false;
+        if (wifiThread != null) {
+//			//TODO check if the thread stopped
+			wifiThread.interrupt();
+		}
+//    	unbindService(pdConnection);
     }	
     
     
     
 // Pure Data
+    
+    
+//    private final ServiceConnection pdConnection = new ServiceConnection() {
+//    	@Override
+//    	public void onServiceConnected(ComponentName name, IBinder service) {
+//    		pdService = ((PdService.PdBinder)service).getService();
+//    		try {
+//    			initPd();
+//    			loadPatch();
+//    		} catch (IOException e) {
+//    			Log.e(TAG, e.toString());
+//    			finish();
+//    		}
+//    	}
+//    	
+//    	@Override
+//    	public void onServiceDisconnected(ComponentName name) {
+//    		// this method will never be called
+//    	}
+//    };
+    
+//    private void initPd() throws IOException {
+//    	// Configure the audio glue
+//    	int sampleRate = AudioParameters.suggestSampleRate();
+//    	pdService.initAudio(sampleRate, 1, 2, 10.0f);
+//    	pdService.startAudio();
+//    	start();
+//    	// Create and install the dispatcher
+//    	dispatcher = new PdUiDispatcher();
+//    	PdBase.setReceiver(dispatcher);
+//    }
+    
+//    private void start() {
+//    	if (!pdService.isRunning()) {
+//    		Intent intent = new Intent(Sensors2PDActivity.this,
+//    								Sensors2PDActivity.class);
+//    		pdService.startAudio(intent, R.drawable.ic_launcher,
+//    							"S2PD", "Return to S2PD.");
+//    	}
+//    }
+    
 	
     private void initPd() throws IOException {
     	// Configure the audio glue
@@ -384,11 +448,35 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	}
 	
 	
+	
+	
 // Wifi Sensor
+	
+	
 	/**
 	 * Code based: 
 	 * http://www.androidsnippets.com/scan-for-wireless-networks
 	 */
+	
+	static public class WifiReceiverThread extends Thread {
+		public void run() {
+			while(isRunning) {				
+				if (wifiListReceived) {
+					mainWifi.startScan();
+					wifiListReceived = false;
+				} else {
+					try {
+						sleep(250);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+	
+	
 	class WifiReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
     		if ( debug ) {
@@ -401,14 +489,13 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
     			PdBase.sendFloat("sensorW-"+wifiList.get(i).SSID, wifiList.get(i).level);
     			if ( debug ) {
     				setTextViewSensorsWifi(i, "sensorW-"+wifiList.get(i).SSID+"\n level: "+wifiList.get(i).level, TextView.VISIBLE);
+    				
     			}
-    		}        		
+    		}
+    		wifiListReceived = true;
         }
     }
 
-	
-	
-	
 	
 	
 	
@@ -929,7 +1016,8 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 		pdFile = file;		
 		try {
 			if(pdFile != null) {
-				loadPatch();    				
+				loadPatch();
+//				bindService(new Intent(this, PdService.class), pdConnection, BIND_AUTO_CREATE);
 			}
 		} catch (IOException e) {
 			Log.e(TAG, e.toString());
