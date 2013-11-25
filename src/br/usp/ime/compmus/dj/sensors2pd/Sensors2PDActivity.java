@@ -66,7 +66,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	private static boolean wifiListReceived = true;
 	
 	private PdUiDispatcher dispatcher;
-//	private PdService pdService = null;
+	private PdService pdService = null;
 	private SensorManager mSensorManager;
 	public View multiTouchView;
 	
@@ -129,15 +129,15 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 		wifiThread.start();
 		
 		// PD
-//		bindService(new Intent(this, PdService.class), pdConnection, BIND_AUTO_CREATE);
+		bindService(new Intent(this, PdService.class), pdConnection, BIND_AUTO_CREATE);
 		
-		try {
-        	initPd();
-        	loadPatch();
-        } catch (IOException e) {
-        	Log.e(TAG, e.toString());
-        	finish();
-        }
+//		try {
+//        	initPd();
+//        	loadPatch();
+//        } catch (IOException e) {
+//        	Log.e(TAG, e.toString());
+//        	finish();
+//        }
 	}
 	
 	@Override
@@ -192,7 +192,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	@Override
     protected void onResume() {
     	super.onResume();
-    	PdAudio.startAudio(this);
+//    	PdAudio.startAudio(this);
     	
     	// TODO: Sensor delay can be an option changed from the menu
     	for(Sensor sensor: mSensorManager.getSensorList(Sensor.TYPE_ALL)) {
@@ -205,7 +205,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	@Override
     protected void onPause() {
     	super.onPause();
-    	PdAudio.stopAudio();
+//    	PdAudio.stopAudio();
     	unregisterReceiver(receiverWifi);
 //    	timerWifiScan.cancel();
     }
@@ -221,8 +221,8 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
     @Override
     public void onDestroy() {
     	super.onDestroy();
-    	PdAudio.release();
-    	PdBase.release();
+//    	PdAudio.release();
+//    	PdBase.release();
 //    	timerWifiScan.cancel();
 //        timerWifiScan.purge();
         isRunning = false;
@@ -230,7 +230,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 //			//TODO check if the thread stopped
 			wifiThread.interrupt();
 		}
-//    	unbindService(pdConnection);
+    	unbindService(pdConnection);
     }	
     
     
@@ -238,54 +238,54 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 // Pure Data
     
     
-//    private final ServiceConnection pdConnection = new ServiceConnection() {
-//    	@Override
-//    	public void onServiceConnected(ComponentName name, IBinder service) {
-//    		pdService = ((PdService.PdBinder)service).getService();
-//    		try {
-//    			initPd();
-//    			loadPatch();
-//    		} catch (IOException e) {
-//    			Log.e(TAG, e.toString());
-//    			finish();
-//    		}
-//    	}
-//    	
-//    	@Override
-//    	public void onServiceDisconnected(ComponentName name) {
-//    		// this method will never be called
-//    	}
-//    };
+    private final ServiceConnection pdConnection = new ServiceConnection() {
+    	@Override
+    	public void onServiceConnected(ComponentName name, IBinder service) {
+    		pdService = ((PdService.PdBinder)service).getService();
+    		try {
+    			initPd();
+    			loadPatch();
+    		} catch (IOException e) {
+    			Log.e(TAG, e.toString());
+    			finish();
+    		}
+    	}
+    	
+    	@Override
+    	public void onServiceDisconnected(ComponentName name) {
+    		// this method will never be called
+    	}
+    };
     
-//    private void initPd() throws IOException {
-//    	// Configure the audio glue
-//    	int sampleRate = AudioParameters.suggestSampleRate();
-//    	pdService.initAudio(sampleRate, 1, 2, 10.0f);
-//    	pdService.startAudio();
-//    	start();
-//    	// Create and install the dispatcher
-//    	dispatcher = new PdUiDispatcher();
-//    	PdBase.setReceiver(dispatcher);
-//    }
-    
-//    private void start() {
-//    	if (!pdService.isRunning()) {
-//    		Intent intent = new Intent(Sensors2PDActivity.this,
-//    								Sensors2PDActivity.class);
-//    		pdService.startAudio(intent, R.drawable.ic_launcher,
-//    							"S2PD", "Return to S2PD.");
-//    	}
-//    }
-    
-	
     private void initPd() throws IOException {
     	// Configure the audio glue
     	int sampleRate = AudioParameters.suggestSampleRate();
-    	PdAudio.initAudio(sampleRate, 0, 2, 8, true);
+    	pdService.initAudio(sampleRate, 1, 2, 10.0f);
+    	pdService.startAudio();
+    	start();
     	// Create and install the dispatcher
     	dispatcher = new PdUiDispatcher();
     	PdBase.setReceiver(dispatcher);
     }
+    
+    private void start() {
+    	if (!pdService.isRunning()) {
+    		Intent intent = new Intent(Sensors2PDActivity.this,
+    								Sensors2PDActivity.class);
+    		pdService.startAudio(intent, R.drawable.ic_launcher,
+    							"S2PD", "Return to S2PD.");
+    	}
+    }
+    
+	
+//    private void initPd() throws IOException {
+//    	// Configure the audio glue
+//    	int sampleRate = AudioParameters.suggestSampleRate();
+//    	PdAudio.initAudio(sampleRate, 0, 2, 8, true);
+//    	// Create and install the dispatcher
+//    	dispatcher = new PdUiDispatcher();
+//    	PdBase.setReceiver(dispatcher);
+//    }
     
     private void loadPatch() throws IOException {
     	// Hear the sound
