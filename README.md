@@ -1,16 +1,16 @@
 Sensors2PD
 ==========
 
-An Android application that helps you to use sensors from your mobile to control Pure Data patchs.
+An Android application that helps you to use sensors from your mobile to control Pure Data patches.
 
 This application uses [**libpd**](https://github.com/libpd/pd-for-android), so you need to download PdCore and set this library on your project.
 
 How To Use
 ==========
 
-First, you need to create a PD patch using receivers from the sensors available on your Android device. Your patch needs a [dac~] to use your device speaker or headphone jack as an audio output, and you can also use [adc~] to get audio from mic or headset.
+First, you need to create a PD patch using receivers from the sensors available on your Android device. Your patch needs a [dac~] to use your device speaker or headphone jack as an audio output, and you can also use [adc~] to get audio from device's Microphone or head-set.
 
-Use Browse menu option to load your patch from your sdcard and start playing. It is possible to select a PD file (*.pd) or a Zip file (*.zip). If you want to use a zip file, you need to use your PD file with the same name as the Zip file and left this PD file on root directory of your Zip file (compress the files, not the directory).
+Use Browse menu option to load your patch from your SDCard and start playing. It is possible to select a PD file (*.pd) or a Zip file (*.zip). If you want to use a zip file, you need to use your PD file with the same name as the Zip file and left this PD file on root directory of your Zip file (compress the files, not the directory).
 
 Sensors2PD will send float values from every change on sensors to PD, even if you do not use all the sensors values.
 
@@ -21,7 +21,7 @@ You can receive values from all sensors available on your mobile device. Dependi
 
 *    [r sensorIDv#]
  
-If you have Acceleromer available, which has ID=1 and 3 variables, you can receive the sensor values using:
+If you have Accelerometer available, which has ID=1 and 3 variables, you can receive the sensor values using:
 
 *    [r sensor1v0]
 *    [r sensor1v1]
@@ -42,11 +42,11 @@ If you want to track first touch position, which has ID=0, you need:
 Wi-Fi level
 ----------
 
-You can also use the Wi-Fi level. You will need to configure the receiver with the SSID without space on the name (ID).
+You can also use the WiFi level. You will need to configure the receiver with the SSID without space on the name (ID).
 
 *   [r sensorW-ID]
 
-If your Wi-Fi SSID is "MyInternet", you'll need the receiver:
+If your WiFi SSID is "MyInternet", you'll need the receiver:
 
 *   [r sensorW-MyInternet]
 
@@ -54,7 +54,7 @@ If your Wi-Fi SSID is "MyInternet", you'll need the receiver:
 Sensors Descriptions
 ====================
 
-Native sensores
+Native sensors
 ---------------
 
 Each sensor has an specific id and the id is the same for every Android device with the same sensor available. Here is the list:
@@ -135,10 +135,10 @@ More informations about Android Sensors:
 You can check the sensors available for your device using the Debug switch option on menu.
 
 
-Wi-Fi levels
+WiFi levels
 -----------
 
-The Wi-Fi level varies between -1 dBm to -100dBm.
+The WiFi level varies between -1 dBm to -100dBm.
 
 Questions or comments
 =====================
