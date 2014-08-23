@@ -7,15 +7,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.puredata.android.io.AudioParameters;
-import org.puredata.android.io.PdAudio;
 import org.puredata.android.service.PdService;
 import org.puredata.android.utils.PdUiDispatcher;
 import org.puredata.core.PdBase;
@@ -27,12 +21,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -54,14 +46,12 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class Sensors2PDActivity extends Activity implements SensorEventListener, OnTouchListener {
 
 	private static final String TAG = "SensorToPD";
-	private boolean debug = false;
 	private static boolean isRunning = false;
 	private static boolean wifiListReceived = true;
 	
@@ -158,26 +148,26 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	        		onCreateDialog(BROWSE_DIALOG).show();	        		
 	        	}
 	        	return true;
-	        case R.id.action_debug:
-	        	if(debug) {
-	        		TextView textIntro = (TextView) findViewById(R.id.textViewIntro);
-	        		textIntro.setVisibility(TextView.VISIBLE);
-	        		debug = false;
-	        		for(int i = 0; i <= 30; i++) {
-	        			setTextViewSensors(i, "", TextView.GONE);
-	        		}
-	        		for(int i = 0; i <= 10; i++) {
-	            		setTextViewSensorsTouch(i, "", TextView.GONE);
-	            	}
-	        		for(int i = 0; i <= 30; i++) {
-	            		setTextViewSensorsWifi(i, "", TextView.GONE);
-	            	}
-	        	} else {
-	        		TextView textIntro = (TextView) findViewById(R.id.textViewIntro);
-	        		textIntro.setVisibility(TextView.GONE);
-	        		debug = true;
-	        	}
-	        	return true;
+//	        case R.id.action_debug:
+//	        	if(debug) {
+//	        		TextView textIntro = (TextView) findViewById(R.id.textViewIntro);
+//	        		textIntro.setVisibility(TextView.VISIBLE);
+//	        		debug = false;
+//	        		for(int i = 0; i <= 30; i++) {
+//	        			setTextViewSensors(i, "", TextView.GONE);
+//	        		}
+//	        		for(int i = 0; i <= 10; i++) {
+//	            		setTextViewSensorsTouch(i, "", TextView.GONE);
+//	            	}
+//	        		for(int i = 0; i <= 30; i++) {
+//	            		setTextViewSensorsWifi(i, "", TextView.GONE);
+//	            	}
+//	        	} else {
+//	        		TextView textIntro = (TextView) findViewById(R.id.textViewIntro);
+//	        		textIntro.setVisibility(TextView.GONE);
+//	        		debug = true;
+//	        	}
+//	        	return true;
 	        case R.id.action_guide:
 	        	Intent intent = new Intent(this, GuideActivity.class);
 	        	startActivity(intent);
@@ -227,7 +217,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 //        timerWifiScan.purge();
         isRunning = false;
         if (wifiThread != null) {
-//			//TODO check if the thread stopped
+//			//TODO check thread state
 			wifiThread.interrupt();
 		}
     	unbindService(pdConnection);
@@ -253,7 +243,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
     	
     	@Override
     	public void onServiceDisconnected(ComponentName name) {
-    		// this method will never be called
+    		// this method will never be called?!
     	}
     };
     
@@ -276,16 +266,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
     							"S2PD", "Return to S2PD.");
     	}
     }
-    
-	
-//    private void initPd() throws IOException {
-//    	// Configure the audio glue
-//    	int sampleRate = AudioParameters.suggestSampleRate();
-//    	PdAudio.initAudio(sampleRate, 0, 2, 8, true);
-//    	// Create and install the dispatcher
-//    	dispatcher = new PdUiDispatcher();
-//    	PdBase.setReceiver(dispatcher);
-//    }
+ 
     
     private void loadPatch() throws IOException {
     	// Hear the sound
@@ -347,13 +328,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 			for(int i = 0; i < event.getPointerCount(); i++) {
 				int id = event.getPointerId(i);
 				PdBase.sendFloat("sensorT"+id+"vx", event.getX());
-				PdBase.sendFloat("sensorT"+id+"vy", event.getY());
-
-				if(debug) {
-					StringBuilder textView = new StringBuilder("sensorT"+id+":\n vx: "+event.getX()+"\n vy: "+event.getY());
-					setTextViewSensorsTouch(id, textView.toString(), TextView.VISIBLE);
-				}
-//				Log.w(TAG, "Pointer Down: "+id);						
+				PdBase.sendFloat("sensorT"+id+"vy", event.getY());						
 			}
 			break;
 			
@@ -363,11 +338,6 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 				int id = event.getPointerId(i);
 				PdBase.sendFloat("sensorT"+id+"vx", event.getX());
 				PdBase.sendFloat("sensorT"+id+"vy", event.getY());
-				if(debug) {
-					StringBuilder textView = new StringBuilder("sensorT"+id+":\n vx: "+event.getX()+"\n vy: "+event.getY());
-					setTextViewSensorsTouch(id, textView.toString(), TextView.VISIBLE);						
-//					Log.w(TAG, "Pointer Move: "+event.getPointerId(i));					
-				}
 			}
 			break;
 			
@@ -376,15 +346,6 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 			int id = event.getActionIndex();
 			PdBase.sendFloat("sensorT"+id+"vx", -1);
 			PdBase.sendFloat("sensorT"+id+"vy", -1);
-			if(debug) {
-				StringBuilder textView = new StringBuilder("sensorT"+id+":\n vx: -1\n vy: -1");
-				// TODO: set the visibility to GONE someday..
-				setTextViewSensorsTouch(id, textView.toString(), TextView.VISIBLE);
-//				Log.w(TAG, "Pointer UP: "+id+" "+event.getActionIndex()+" "+event.getPointerId(event.getActionIndex()));
-				for(int i = 0; i < event.getPointerCount(); i++) {
-//					Log.e(TAG, "Pointer UP: "+event.getPointerId(i));
-				}					
-			}
 
 			break;
 		case MotionEvent.ACTION_CANCEL:
@@ -432,13 +393,6 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 		for(int i = 0; i < event.values.length; i++) {
 			PdBase.sendFloat("sensor"+event.sensor.getType()+"v"+i, event.values[i]);
 		}
-		if(debug) {
-			StringBuilder textView = new StringBuilder("sensor"+event.sensor.getType()+":"+event.sensor.getName());
-			for(int i = 0; i < event.values.length; i++) {
-				textView.append("\n v"+i+": "+event.values[i]);				
-			}
-			setTextViewSensors(event.sensor.getType(), textView.toString(), TextView.VISIBLE);			
-		}
 	}
 	
 	@Override
@@ -479,408 +433,14 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	
 	class WifiReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
-    		if ( debug ) {
-    			for(int i = 0; i <= 30; i++) {
-    				setTextViewSensorsWifi(i, "", TextView.GONE);
-    			}    			
-    		}
     		wifiList = mainWifi.getScanResults();
     		for(int i = 0; i < wifiList.size(); i++){
     			PdBase.sendFloat("sensorW-"+wifiList.get(i).SSID, wifiList.get(i).level);
-    			if ( debug ) {
-    				setTextViewSensorsWifi(i, "sensorW-"+wifiList.get(i).SSID+"\n level: "+wifiList.get(i).level, TextView.VISIBLE);
-    				
-    			}
     		}
     		wifiListReceived = true;
         }
     }
 
-	
-	
-	
-// Debug View 
-	// TODO: Change to Items list
-	
-	private void setTextViewSensors(int id, String text, int visibility) {
-		TextView tv;
-		switch (id) {
-		case 1:
-			tv = (TextView) findViewById(R.id.textViewSensor1);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 2:
-			tv = (TextView) findViewById(R.id.textViewSensor2);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 3:
-			tv = (TextView) findViewById(R.id.textViewSensor3);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 4:
-			tv = (TextView) findViewById(R.id.textViewSensor4);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 5:
-			tv = (TextView) findViewById(R.id.textViewSensor5);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 6:
-			tv = (TextView) findViewById(R.id.textViewSensor6);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 7:
-			tv = (TextView) findViewById(R.id.textViewSensor7);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 8:
-			tv = (TextView) findViewById(R.id.textViewSensor8);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 9:
-			tv = (TextView) findViewById(R.id.textViewSensor9);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 10:
-			tv = (TextView) findViewById(R.id.textViewSensor10);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 11:
-			tv = (TextView) findViewById(R.id.textViewSensor11);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 12:
-			tv = (TextView) findViewById(R.id.textViewSensor12);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 13:
-			tv = (TextView) findViewById(R.id.textViewSensor13);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 14:
-			tv = (TextView) findViewById(R.id.textViewSensor14);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 15:
-			tv = (TextView) findViewById(R.id.textViewSensor15);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 16:
-			tv = (TextView) findViewById(R.id.textViewSensor16);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 17:
-			tv = (TextView) findViewById(R.id.textViewSensor17);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 18:
-			tv = (TextView) findViewById(R.id.textViewSensor18);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 19:
-			tv = (TextView) findViewById(R.id.textViewSensor19);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 20:
-			tv = (TextView) findViewById(R.id.textViewSensor20);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 21:
-			tv = (TextView) findViewById(R.id.textViewSensor21);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 22:
-			tv = (TextView) findViewById(R.id.textViewSensor22);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 23:
-			tv = (TextView) findViewById(R.id.textViewSensor23);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 24:
-			tv = (TextView) findViewById(R.id.textViewSensor24);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 25:
-			tv = (TextView) findViewById(R.id.textViewSensor25);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 26:
-			tv = (TextView) findViewById(R.id.textViewSensor26);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 27:
-			tv = (TextView) findViewById(R.id.textViewSensor27);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 28:
-			tv = (TextView) findViewById(R.id.textViewSensor28);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 29:
-			tv = (TextView) findViewById(R.id.textViewSensor29);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 30:
-			tv = (TextView) findViewById(R.id.textViewSensor30);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		default:
-			break;
-		}
-	}
-	
-	
-	private void setTextViewSensorsTouch(int id, String text, int visibility) {
-		TextView tv;
-		switch (id) {
-		case 1:
-			tv = (TextView) findViewById(R.id.textViewSensorT1);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 2:
-			tv = (TextView) findViewById(R.id.textViewSensorT2);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 3:
-			tv = (TextView) findViewById(R.id.textViewSensorT3);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 4:
-			tv = (TextView) findViewById(R.id.textViewSensorT4);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 5:
-			tv = (TextView) findViewById(R.id.textViewSensorT5);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 6:
-			tv = (TextView) findViewById(R.id.textViewSensorT6);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 7:
-			tv = (TextView) findViewById(R.id.textViewSensorT7);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 8:
-			tv = (TextView) findViewById(R.id.textViewSensorT8);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 9:
-			tv = (TextView) findViewById(R.id.textViewSensorT9);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 10:
-			tv = (TextView) findViewById(R.id.textViewSensorT10);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		default:
-			break;
-		}
-	}
-	
-	// Wifi
-	
-	private void setTextViewSensorsWifi(int id, String text, int visibility) {
-		TextView tv;
-		switch (id) {
-		case 1:
-			tv = (TextView) findViewById(R.id.textViewSensorW1);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 2:
-			tv = (TextView) findViewById(R.id.textViewSensorW2);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 3:
-			tv = (TextView) findViewById(R.id.textViewSensorW3);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 4:
-			tv = (TextView) findViewById(R.id.textViewSensorW4);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 5:
-			tv = (TextView) findViewById(R.id.textViewSensorW5);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 6:
-			tv = (TextView) findViewById(R.id.textViewSensorW6);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 7:
-			tv = (TextView) findViewById(R.id.textViewSensorW7);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 8:
-			tv = (TextView) findViewById(R.id.textViewSensorW8);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 9:
-			tv = (TextView) findViewById(R.id.textViewSensorW9);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 10:
-			tv = (TextView) findViewById(R.id.textViewSensorW10);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 11:
-			tv = (TextView) findViewById(R.id.textViewSensorW11);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 12:
-			tv = (TextView) findViewById(R.id.textViewSensorW12);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 13:
-			tv = (TextView) findViewById(R.id.textViewSensorW13);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 14:
-			tv = (TextView) findViewById(R.id.textViewSensorW14);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 15:
-			tv = (TextView) findViewById(R.id.textViewSensorW15);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 16:
-			tv = (TextView) findViewById(R.id.textViewSensorW16);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 17:
-			tv = (TextView) findViewById(R.id.textViewSensorW17);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 18:
-			tv = (TextView) findViewById(R.id.textViewSensorW18);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 19:
-			tv = (TextView) findViewById(R.id.textViewSensorW19);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 20:
-			tv = (TextView) findViewById(R.id.textViewSensorW20);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 21:
-			tv = (TextView) findViewById(R.id.textViewSensorW21);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 22:
-			tv = (TextView) findViewById(R.id.textViewSensorW22);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 23:
-			tv = (TextView) findViewById(R.id.textViewSensorW23);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 24:
-			tv = (TextView) findViewById(R.id.textViewSensorW24);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 25:
-			tv = (TextView) findViewById(R.id.textViewSensorW25);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 26:
-			tv = (TextView) findViewById(R.id.textViewSensorW26);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 27:
-			tv = (TextView) findViewById(R.id.textViewSensorW27);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 28:
-			tv = (TextView) findViewById(R.id.textViewSensorW28);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 29:
-			tv = (TextView) findViewById(R.id.textViewSensorW29);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		case 30:
-			tv = (TextView) findViewById(R.id.textViewSensorW30);
-			tv.setText(text);
-			tv.setVisibility(visibility);
-			break;
-		default:
-			break;
-		}
-	}
-	
-	
-    
 		
     
 // Menu
@@ -1024,8 +584,6 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
         	finish();
 		}   
 	}
-	
-	
 	
 	
 	

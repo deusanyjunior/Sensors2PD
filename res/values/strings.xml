@@ -7,7 +7,7 @@
     <string name="action_debug">DebugSW</string>
     <string name="action_guide">Guide</string>
     <string name="activity_guide">Sensors2PD Guide</string>
-    <string name="text_guide">Guide:\n\nOn creating your Pure Data patch you can use any of the receivers from available sensors to interact with your patch.\n\nExample:\nIf you have Accelerometer available, your device will send float values using\n [s sensor1v0],\n [s sensor1v1],\n [s sensor1v2].\nThen you can create receivers for these sensors and use the values on your patch.\n\nTouch screen sensors are also available from [s sensorT0vx] to [s sensorT14vx], and [sensorT14vy] to [s sensorT14vy].\n\nCheck available sensors below and thanks for using Sensors2PD.\n\n</string>
+    <string name="text_guide">Guide:\n\nYou can use any of the receivers from available sensors to interact with your patch.\n\nIf Accelerometer is available, you can use these receivers:\n [r sensor1v0], [r sensor1v1], [r sensor1v2]\n\nTouch screen sensors are also available from:\n [r sensorT0vx] to [r sensorT14vx],\n and \n [r sensorT14vy] to [r sensorT14vy].\n\nYou can also use WiFi signal level:\n [r sensorW-WiFiSSID]\n\nCheck available sensors below.\nThanks for using Sensors2PD.\n\n</string>
     <string name="text_available_sensors">Available sensors:\n</string>
     
 

@@ -5,11 +5,11 @@
         android:orderInCategory="100"
         android:showAsAction="always"
         android:title="@string/action_browse"/>
-    <item
-        android:id="@+id/action_debug"
-        android:orderInCategory="100"
-        android:showAsAction="always"
-        android:title="@string/action_debug"/>
+<!--     <item -->
+<!--         android:id="@+id/action_debug" -->
+<!--         android:orderInCategory="100" -->
+<!--         android:showAsAction="always" -->
+<!--         android:title="@string/action_debug"/> -->
     <item
         android:id="@+id/action_guide"
         android:orderInCategory="100"
