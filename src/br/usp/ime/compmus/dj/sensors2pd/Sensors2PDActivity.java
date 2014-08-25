@@ -78,9 +78,6 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	WifiReceiver receiverWifi;
 	List<ScanResult> wifiList;
 	
-	WifiReceiverThread wifiThread;
-	
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -98,36 +95,12 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 		mainWifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		receiverWifi = new WifiReceiver();
 		registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-				
-//		final Handler handler = new Handler(); 
-//		timerWifiScan = new Timer();
-//		timerWifiScan.schedule(new TimerTask() { 
-//			public void run() { 
-//				handler.post(new Runnable() {
-//					@Override
-//					public void run() { 
-////						Log.i(TAG, "Run Scan!");
-//						mainWifi.startScan();
-//		            }
-//		        }); 
-//		    } 
-//		 }, 1000, 500);
-		
-	
 		isRunning = true;
-		wifiThread = new WifiReceiverThread();
-		wifiThread.start();
+		mainWifi.startScan();
 		
 		// PD
 		bindService(new Intent(this, PdService.class), pdConnection, BIND_AUTO_CREATE);
 		
-//		try {
-//        	initPd();
-//        	loadPatch();
-//        } catch (IOException e) {
-//        	Log.e(TAG, e.toString());
-//        	finish();
-//        }
 	}
 	
 	@Override
@@ -148,26 +121,6 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	        		onCreateDialog(BROWSE_DIALOG).show();	        		
 	        	}
 	        	return true;
-//	        case R.id.action_debug:
-//	        	if(debug) {
-//	        		TextView textIntro = (TextView) findViewById(R.id.textViewIntro);
-//	        		textIntro.setVisibility(TextView.VISIBLE);
-//	        		debug = false;
-//	        		for(int i = 0; i <= 30; i++) {
-//	        			setTextViewSensors(i, "", TextView.GONE);
-//	        		}
-//	        		for(int i = 0; i <= 10; i++) {
-//	            		setTextViewSensorsTouch(i, "", TextView.GONE);
-//	            	}
-//	        		for(int i = 0; i <= 30; i++) {
-//	            		setTextViewSensorsWifi(i, "", TextView.GONE);
-//	            	}
-//	        	} else {
-//	        		TextView textIntro = (TextView) findViewById(R.id.textViewIntro);
-//	        		textIntro.setVisibility(TextView.GONE);
-//	        		debug = true;
-//	        	}
-//	        	return true;
 	        case R.id.action_guide:
 	        	Intent intent = new Intent(this, GuideActivity.class);
 	        	startActivity(intent);
@@ -190,6 +143,7 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
     	}
     	
     	registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+    	mainWifi.startScan();
     }
 	
 	@Override
@@ -197,7 +151,6 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
     	super.onPause();
 //    	PdAudio.stopAudio();
     	unregisterReceiver(receiverWifi);
-//    	timerWifiScan.cancel();
     }
     
     @Override
@@ -216,10 +169,6 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 //    	timerWifiScan.cancel();
 //        timerWifiScan.purge();
         isRunning = false;
-        if (wifiThread != null) {
-//			//TODO check thread state
-			wifiThread.interrupt();
-		}
     	unbindService(pdConnection);
     }	
     
@@ -410,34 +359,18 @@ public class Sensors2PDActivity extends Activity implements SensorEventListener,
 	/**
 	 * Code based: 
 	 * http://www.androidsnippets.com/scan-for-wireless-networks
-	 */
-	
-	static public class WifiReceiverThread extends Thread {
-		public void run() {
-			while(isRunning) {				
-				if (wifiListReceived) {
-					mainWifi.startScan();
-					wifiListReceived = false;
-				} else {
-					try {
-						sleep(250);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-	}
-	
+	 */	
 	
 	class WifiReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
     		wifiList = mainWifi.getScanResults();
+    		if(isRunning) {
+    			mainWifi.startScan();
+    		}
     		for(int i = 0; i < wifiList.size(); i++){
     			PdBase.sendFloat("sensorW-"+wifiList.get(i).SSID, wifiList.get(i).level);
+    			Log.e(TAG, "WiFi "+"sensorW-"+wifiList.get(i).SSID+" "+wifiList.get(i).level);
     		}
-    		wifiListReceived = true;
         }
     }
 
